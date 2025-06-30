@@ -25,3 +25,7 @@ TO RUN BACKEND:
 cd project
 cd server
 node index.js
+
+UI image:
+![image](https://github.com/user-attachments/assets/34e7253c-edbd-4eb2-a554-5a2c81cf32ef)
+
