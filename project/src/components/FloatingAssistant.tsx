@@ -1,11 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Volume2, X } from 'lucide-react';
 import { storage } from '../utils/storage';
 
 export function FloatingAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [balance, setBalance] = useState<number>(0);
 
+  // 🔄 Fetch balance on mount
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const value = await storage.getBalance();
+        const numericValue = Number(value);
+        setBalance(isNaN(numericValue) ? 0 : numericValue);
+      } catch (error) {
+        console.error("❌ Failed to fetch balance:", error);
+        setBalance(0);
+      }
+    };
+    fetchBalance();
+  }, []);
+
+  // 🎤 Speech
   const speak = (text: string) => {
     if ('speechSynthesis' in window) {
       setIsSpeaking(true);
@@ -26,7 +43,6 @@ export function FloatingAssistant() {
   ];
 
   const getRandomTip = () => tips[Math.floor(Math.random() * tips.length)];
-  const balance = storage.getBalance();
 
   const quickActions = [
     {
