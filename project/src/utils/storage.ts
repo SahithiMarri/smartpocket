@@ -1,54 +1,74 @@
 import { Transaction, SavingsGoal, Badge } from '../types';
+import { getCategoryEmoji } from './voiceParser';
 
-const STORAGE_KEYS = {
-  TRANSACTIONS: 'smartpocket_transactions',
-  SAVINGS_GOALS: 'smartpocket_savings_goals',
-  BADGES: 'smartpocket_badges',
-  BALANCE: 'smartpocket_balance'
-};
+const API_BASE = 'http://localhost:5000/api';
 
 export const storage = {
-  getTransactions: (): Transaction[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-    return data ? JSON.parse(data).map((t: any) => ({
+  getUserId: (): string | null => localStorage.getItem('userId'),
+
+  getTransactions: async (): Promise<Transaction[]> => {
+    const userId = storage.getUserId();
+    if (!userId) return [];
+    const res = await fetch(`${API_BASE}/transactions/${userId}`);
+    const data = await res.json();
+    return data.map((t: any) => ({
       ...t,
-      date: new Date(t.date)
-    })) : [];
+      id: t._id,
+      date: new Date(t.date),
+      emoji: getCategoryEmoji(t.category)
+    }));
   },
 
-  saveTransaction: (transaction: Transaction): void => {
-    const transactions = storage.getTransactions();
-    transactions.push(transaction);
-    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
+  saveTransaction: async (transaction: Transaction): Promise<void> => {
+    const userId = storage.getUserId();
+    if (!userId) return;
+    await fetch(`${API_BASE}/transactions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...transaction, userId }),
+    });
   },
 
-  getSavingsGoals: (): SavingsGoal[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.SAVINGS_GOALS);
-    return data ? JSON.parse(data) : [];
+  getBalance: async (): Promise<number> => {
+    const txns = await storage.getTransactions();
+    return txns.reduce((sum, t) => t.type === 'income' ? sum + t.amount : sum - t.amount, 0);
   },
 
-  saveSavingsGoals: (goals: SavingsGoal[]): void => {
-    localStorage.setItem(STORAGE_KEYS.SAVINGS_GOALS, JSON.stringify(goals));
+  getSavingsGoals: async (): Promise<SavingsGoal[]> => {
+    const userId = storage.getUserId();
+    if (!userId) return [];
+    const res = await fetch(`${API_BASE}/goals/${userId}`);
+    return await res.json();
   },
 
-  getBadges: (): Badge[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.BADGES);
-    return data ? JSON.parse(data).map((b: any) => ({
+  saveSavingsGoals: async (goals: SavingsGoal[]): Promise<void> => {
+    const userId = storage.getUserId();
+    if (!userId) return;
+    await fetch(`${API_BASE}/goals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, goals }),
+    });
+  },
+
+  getBadges: async (): Promise<Badge[]> => {
+    const userId = storage.getUserId();
+    if (!userId) return [];
+    const res = await fetch(`${API_BASE}/badges/${userId}`);
+    const data = await res.json();
+    return data.map((b: any) => ({
       ...b,
       earnedDate: b.earnedDate ? new Date(b.earnedDate) : undefined
-    })) : [];
+    }));
   },
 
-  saveBadges: (badges: Badge[]): void => {
-    localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(badges));
+  saveBadges: async (badges: Badge[]): Promise<void> => {
+    const userId = storage.getUserId();
+    if (!userId) return;
+    await fetch(`${API_BASE}/badges`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, badges }),
+    });
   },
-
-  getBalance: (): number => {
-    const transactions = storage.getTransactions();
-    return transactions.reduce((total, transaction) => {
-      return transaction.type === 'income' 
-        ? total + transaction.amount 
-        : total - transaction.amount;
-    }, 0);
-  }
 };

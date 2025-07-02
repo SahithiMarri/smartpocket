@@ -18,12 +18,12 @@ export interface SavingsGoal {
 }
 
 export interface Badge {
-  id: string;
+  _id?: string;                // MongoDB will return _id
   title: string;
   description: string;
   emoji: string;
-  earned: boolean;
-  earnedDate?: Date;
+  earned?: boolean;           // Calculated on frontend
+  earnedDate?: Date;          // Set when earned
 }
 
 export interface Quiz {
