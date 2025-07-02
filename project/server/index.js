@@ -10,6 +10,8 @@ import goalsRoutes from './goals.js';
 import badgesRoutes from './badges.js';
 
 dotenv.config();
+console.log('🔐 Mongo URI:', process.env.MONGO_URI);
+
 const app = express();
 const port = process.env.PORT || 5000;
 
