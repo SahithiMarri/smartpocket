@@ -186,8 +186,12 @@ export function VoicePage() {
                 <span>"I received ₹500 as allowance"</span>
               </div>
               <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
-                <span className="text-red-600">💸</span>
+                <span className="text-red-600">🍕</span>
                 <span>"I spent ₹100 on lunch"</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
+                <span className="text-red-600">💸</span>
+                <span>"Saved ₹100 for goals"</span>
               </div>
               <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
                 <span className="text-blue-600">🚌</span>
@@ -195,6 +199,9 @@ export function VoicePage() {
               </div>
             </div>
           </div>
+          
+          
+          
 
           {/* Transcript Display */}
           {transcript && (
