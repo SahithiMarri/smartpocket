@@ -15,24 +15,30 @@ function App() {
   const [currentPage, setCurrentPage] = useState('login');
   const [username, setUsername] = useState<string | null>(null);
 
-  // Initialize app data on first load
   useEffect(() => {
-    // Initialize savings goals if not present
-    const existingGoals = storage.getSavingsGoals();
-    if (existingGoals.length === 0) {
-      storage.saveSavingsGoals(initialSavingsGoals);
-    }
+    const initializeData = async () => {
+      const existingGoals = await storage.getSavingsGoals();
+      if (existingGoals.length === 0) {
+        await storage.saveSavingsGoals(initialSavingsGoals);
+      }
 
-    // Initialize badges if not present
-    const existingBadges = storage.getBadges();
-    if (existingBadges.length === 0) {
-      storage.saveBadges(initialBadges);
-    }
+      const existingBadges = await storage.getBadges();
+      if (existingBadges.length === 0) {
+        await storage.saveBadges(initialBadges);
+      }
+    };
+
+    initializeData();
   }, []);
 
   const handleLoginSuccess = (username: string) => {
     setUsername(username);
-    setCurrentPage('dashboard');
+    setCurrentPage('home');
+  };
+
+  const handleLogout = () => {
+    setUsername(null);
+    setCurrentPage('login');
   };
 
   const renderPage = () => {
@@ -57,7 +63,13 @@ function App() {
       case 'quiz':
         return <QuizPage />;
       case 'home':
-        return <HomePage onPageChange={setCurrentPage} />;
+        return (
+          <HomePage
+            onPageChange={setCurrentPage}
+            onLogout={handleLogout}
+            username={username}
+          />
+        );
       default:
         return <Dashboard />;
     }
@@ -65,7 +77,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {username && <p className="p-2 text-right text-gray-600">Welcome, {username}!</p>}
       {renderPage()}
       {username && <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />}
       <FloatingAssistant />
